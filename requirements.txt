@@ -1,0 +1,12 @@
+# requirements
+# Example: pip install -r requirements.txt
+
+# Base ---------------------------------------
+ultralytics
+opencv-python
+torch
+matplotlib
+
+# WebUI ---------------------------------------
+# tqdm
+# gradio
