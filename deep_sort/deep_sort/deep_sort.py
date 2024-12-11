@@ -31,10 +31,10 @@ class DeepSort(object):
         self.height, self.width = ori_img.shape[:2]
         # generate detections
         # 从原图中抠取bbox对应图片并计算得到相应的特征
-        features = self._get_features(bbox_xywh, ori_img)
-        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)        
+        #features = self._get_features(bbox_xywh, ori_img)
+        bbox_tlwh = self._xywh_to_tlwh(bbox_xywh)          #tlwh
         # 筛选掉小于min_confidence的目标，并构造一个Detection对象构成的列表
-        detections = [Detection(bbox_tlwh[i], conf, features[i]) for i,conf in enumerate(confidences) if conf>self.min_confidence]
+        detections = [Detection(bbox_tlwh[i], conf) for i,conf in enumerate(confidences) if conf>self.min_confidence]
 
         # run on non-maximum supression
         boxes = np.array([d.tlwh for d in detections])

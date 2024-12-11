@@ -94,19 +94,19 @@ class Tracker:
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
 
         # Update distance metric.
-        active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
-        features, targets = [], []
-        for track in self.tracks:
-            # 获取所有Confirmed状态的track id
-            if not track.is_confirmed():
-                continue
-            features += track.features # 将Confirmed状态的track的features添加到features列表
-            # 获取每个feature对应的trackid
-            targets += [track.track_id for _ in track.features]
-            track.features = []
-        # 距离度量中的特征集更新
-        self.metric.partial_fit(
-            np.asarray(features), np.asarray(targets), active_targets)
+        # active_targets = [t.track_id for t in self.tracks if t.is_confirmed()]
+        # features, targets = [], []
+        # for track in self.tracks:
+        #     # 获取所有Confirmed状态的track id
+        #     if not track.is_confirmed():
+        #         continue
+        #     features += track.features # 将Confirmed状态的track的features添加到features列表
+        #     # 获取每个feature对应的trackid
+        #     targets += [track.track_id for _ in track.features]
+        #     track.features = []
+        # # 距离度量中的特征集更新
+        # self.metric.partial_fit(
+        #     np.asarray(features), np.asarray(targets), active_targets)
 
     def _match(self, detections):
 
@@ -125,44 +125,51 @@ class Tracker:
 
         # Split track set into confirmed and unconfirmed tracks.
         # 区分开confirmed tracks和unconfirmed tracks
-        confirmed_tracks = [
-            i for i, t in enumerate(self.tracks) if t.is_confirmed()]
+
         unconfirmed_tracks = [
-            i for i, t in enumerate(self.tracks) if not t.is_confirmed()]
+            i for i, t in enumerate(self.tracks)]
+        unmatched_detections = [
+            i for i, t in enumerate(detections)]
+                
+
+        #计家仁修改，删除纹理特征匹配
+        iou_track_candidates = unconfirmed_tracks
 
         # Associate confirmed tracks using appearance features.
         # 对确定态的轨迹进行级联匹配，得到匹配的tracks、不匹配的tracks、不匹配的detections
         # matching_cascade 根据特征将检测框匹配到确认的轨迹。
         # 传入门控后的成本矩阵
-        matches_a, unmatched_tracks_a, unmatched_detections = \
-            linear_assignment.matching_cascade(
-                gated_metric, self.metric.matching_threshold, self.max_age,
-                self.tracks, detections, confirmed_tracks)
+        # matches_a, unmatched_tracks_a, unmatched_detections = \
+        #     linear_assignment.matching_cascade(
+        #         gated_metric, self.metric.matching_threshold, self.max_age,
+        #         self.tracks, detections, confirmed_tracks)
 
         # Associate remaining tracks together with unconfirmed tracks using IOU.        
         # 将未确定态的轨迹和刚刚没有匹配上的轨迹组合为 iou_track_candidates 
         # 并进行基于IoU的匹配
-        iou_track_candidates = unconfirmed_tracks + [
-            k for k in unmatched_tracks_a if
-            self.tracks[k].time_since_update == 1] # 刚刚没有匹配上的轨迹
-        unmatched_tracks_a = [
-            k for k in unmatched_tracks_a if
-            self.tracks[k].time_since_update != 1] # 并非刚刚没有匹配上的轨迹
+        # iou_track_candidates = unconfirmed_tracks + [
+        #     k for k in unmatched_tracks_a if
+        #     self.tracks[k].time_since_update == 1] # 刚刚没有匹配上的轨迹
+        # unmatched_tracks_a = [
+        #     k for k in unmatched_tracks_a if
+        #     self.tracks[k].time_since_update != 1] # 并非刚刚没有匹配上的轨迹
+
+
+
         # 对级联匹配中还没有匹配成功的目标再进行IoU匹配
         # min_cost_matching 使用匈牙利算法解决线性分配问题。
         # 传入 iou_cost，尝试关联剩余的轨迹与未确认的轨迹。
-        matches_b, unmatched_tracks_b, unmatched_detections = \
+        matches, unmatched_tracks, unmatched_detections = \
             linear_assignment.min_cost_matching(
                 iou_matching.iou_cost, self.max_iou_distance, self.tracks,
                 detections, iou_track_candidates, unmatched_detections)
 
-        matches = matches_a + matches_b # 组合两部分匹配 
-        unmatched_tracks = list(set(unmatched_tracks_a + unmatched_tracks_b))
+        # matches = matches_a + matches_b # 组合两部分匹配 
+        # unmatched_tracks = list(set(unmatched_tracks_a + unmatched_tracks_b))
         return matches, unmatched_tracks, unmatched_detections
 
     def _initiate_track(self, detection):
         mean, covariance = self.kf.initiate(detection.to_xyah())
         self.tracks.append(Track(
-            mean, covariance, self._next_id, self.n_init, self.max_age,
-            detection.feature))
+            mean, covariance, self._next_id, self.n_init, self.max_age))
         self._next_id += 1
