@@ -39,9 +39,33 @@ def iou(bbox, candidates):
     area_candidates = candidates[:, 2:].prod(axis=1)
     return area_intersection / (area_bbox + area_candidates - area_intersection)
 
+
+def centre_dis_cal(bbox, candidates,threshold_value):
+
+    box_x,box_y = bbox[0]+bbox[2]/2,bbox[1]+bbox[3]/2
+    single_point = np.array([box_x,box_y])
+
+
+    candidates_xy = np.zeros((len(candidates),2))
+
+
+    candidates_xy[:,0] = candidates[:,0] + candidates[:,2] / 2
+    candidates_xy[:,1] = candidates[:,1] + candidates[:,3] / 2 
+
+    distances = np.sqrt(np.sum((candidates_xy - single_point) ** 2, axis=1))
+
+    distances = distances / threshold_value
+
+    return distances
+
+
+
+
+
+
 # 计算tracks和detections之间的IOU距离成本矩阵
 def iou_cost(tracks, detections, track_indices=None,
-             detection_indices=None):
+             detection_indices=None,threshold_value=100):
     """An intersection over union distance metric.
 
     用于计算tracks和detections之间的iou距离矩阵
@@ -80,5 +104,6 @@ def iou_cost(tracks, detections, track_indices=None,
 
         bbox = tracks[track_idx].to_tlwh()
         candidates = np.asarray([detections[i].tlwh for i in detection_indices])
-        cost_matrix[row, :] = 1. - iou(bbox, candidates)
+        cost_matrix[row, :] = centre_dis_cal(bbox,candidates,threshold_value)   #jjr 20241211
+        #cost_matrix[row, :] = 1. - iou(bbox, candidates)
     return cost_matrix

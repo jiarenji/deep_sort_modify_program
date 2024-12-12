@@ -1,5 +1,6 @@
 # vim: expandtab:ts=4:sw=4
 from __future__ import absolute_import
+from cv2 import threshold
 import numpy as np
 # The linear sum assignment problem is also known as minimum weight matching in bipartite graphs.
 from scipy.optimize import linear_sum_assignment as linear_assignment
@@ -53,6 +54,9 @@ def min_cost_matching(
 
     if len(detection_indices) == 0 or len(track_indices) == 0:
         return [], track_indices, detection_indices  # Nothing to match.
+
+
+    threshold_value = 100
 
     # 计算成本矩阵
     cost_matrix = distance_metric(
