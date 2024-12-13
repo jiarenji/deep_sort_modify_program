@@ -87,8 +87,23 @@ class Tracker:
             self.tracks[track_idx].mark_missed()
         
         # 3. 针对未匹配的detection， detection失配，进行初始化
-        for detection_idx in unmatched_detections:
-            self._initiate_track(detections[detection_idx])
+
+
+        init_judge = True
+
+        for  track in self.tracks:
+            if  (track.state == 2) or (track.state == 1) :
+                init_judge = False
+                
+        if init_judge:
+
+            for detection_idx in unmatched_detections:
+                self._initiate_track(detections[detection_idx])
+                    
+        else:
+            pass
+
+
         
         # 得到最新的tracks列表，保存的是标记为Confirmed和Tentative的track
         self.tracks = [t for t in self.tracks if not t.is_deleted()]
@@ -169,7 +184,10 @@ class Tracker:
         return matches, unmatched_tracks, unmatched_detections
 
     def _initiate_track(self, detection):
-        mean, covariance = self.kf.initiate(detection.to_xyah())
-        self.tracks.append(Track(
-            mean, covariance, self._next_id, self.n_init, self.max_age))
-        self._next_id += 1
+
+
+
+            mean, covariance = self.kf.initiate(detection.to_xyah())
+            self.tracks.append(Track(
+                mean, covariance, self._next_id, self.n_init, self.max_age))
+            self._next_id += 1

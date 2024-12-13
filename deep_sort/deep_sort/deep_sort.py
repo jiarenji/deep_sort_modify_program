@@ -12,7 +12,7 @@ __all__ = ['DeepSort'] # __all__ 提供了暴露接口用的”白名单“
 
 
 class DeepSort(object):
-    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=1.0, max_iou_distance=0.7, max_age=70, n_init=3, nn_budget=100, use_cuda=True):
+    def __init__(self, model_path, max_dist=0.2, min_confidence=0.3, nms_max_overlap=0.5, max_iou_distance=0.7, max_age=3, n_init=2, nn_budget=100, use_cuda=True):
         self.min_confidence = min_confidence # 检测结果置信度阈值 
         self.nms_max_overlap = nms_max_overlap # 非极大抑制阈值，设置为1代表不进行抑制
 

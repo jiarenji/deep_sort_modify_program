@@ -117,7 +117,7 @@ def detect_and_track(input_path: str, output_path: str, detect_class: int, model
 if __name__ == "__main__":
     # 指定输入视频的路径。
     ######
-    input_path = "/workspace/DK_Anti_Interference/yolov8-deepsort-tracking-main/test.mp4"
+    input_path = "/workspace/DK_Anti_Interference/yolov8-deepsort-tracking-main/airplane.mp4"
     ######
 
     # 输出文件夹，默认为系统的临时文件夹路径
@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     # 设置需要检测和跟踪的目标类别
     # yoloV8官方模型的第一个类别为'person'
-    detect_class = 0
+    detect_class = 4
     print(f"detecting {model.names[detect_class]}") # model.names返回模型所支持的所有物体类别
 
     # 加载DeepSort模型
